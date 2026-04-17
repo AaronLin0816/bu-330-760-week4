@@ -1,10 +1,14 @@
 """Math agent that solves questions using tools in a ReAct loop."""
 
 import json
+import sys
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from dotenv import load_dotenv
 from pydantic_ai import Agent
 from calculator import calculate
+from lookup_function import lookup_product
 
 load_dotenv()
 
@@ -12,7 +16,7 @@ load_dotenv()
 #   "google-gla:gemini-2.5-flash"       (needs GOOGLE_API_KEY)
 #   "openai:gpt-4o-mini"                (needs OPENAI_API_KEY)
 #   "anthropic:claude-sonnet-4-6"    (needs ANTHROPIC_API_KEY)
-MODEL = "google-gla:gemini-2.5-flash"
+MODEL = "anthropic:claude-sonnet-4-6"
 
 agent = Agent(
     MODEL,
@@ -41,12 +45,12 @@ def calculator_tool(expression: str) -> str:
 #   3. If not found, return the list of available product names so the agent
 #      can try again with the correct name
 #
-# @agent.tool_plain
-# def product_lookup(product_name: str) -> str:
-#     """Look up the price of a product by name.
-#     Use this when a question asks about product prices from the catalog.
-#     """
-#     ...
+@agent.tool_plain
+def product_lookup(product_name: str) -> str:
+    """Look up the price of a product by name.
+    Use this when a question asks about product prices from the catalog.
+    """
+    return lookup_product(product_name)
 
 
 def load_questions(path: str = "math_questions.md") -> list[str]:
